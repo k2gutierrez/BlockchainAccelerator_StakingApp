@@ -29,13 +29,13 @@ The `StakingApp` contract requires users to deposit an exact, predefined amount 
 
 [StakingToken.sol](./src/StakingToken.sol) - ERC20 Token Mock to apply in StakingApp.sol
 
-💻 Technical Docs
+# 💻 Technical Docs
 The primary interaction points of the application handle deposits, withdrawals, and reward claims. The contract strictly manages state to prevent reentrancy and double-claiming.
 
-depositTokens
+## depositTokens
 Users deposit the required fixed amount of tokens. Reverts if the user has already deposited or if the amount is incorrect.
 
-    Solidity
+```Solidity
     function depositTokens(uint256 _tokenAmountToDeposit) external {
         if (_tokenAmountToDeposit != s_fixedStakingAmount) revert StakingApp__IncorrectAmountToDeposit();
         if (s_userBalance[msg.sender] != 0) revert StakingApp__UserAlreadyDepositedTokens();
@@ -47,11 +47,12 @@ Users deposit the required fixed amount of tokens. Reverts if the user has alrea
         
         emit DepositTokens(msg.sender, _tokenAmountToDeposit);
     }
+```
 
-claimRewards
+## claimRewards
 Calculates if the user has waited the required staking period. If successful, resets the timer and transfers the ETH reward.
 
-    Solidity
+```Solidity
     function claimRewards() external {
         // 1. Check Balance
         if (s_userBalance[msg.sender] != s_fixedStakingAmount) revert StakingApp__NotStaking();
@@ -67,36 +68,40 @@ Calculates if the user has waited the required staking period. If successful, re
         (bool success,) = msg.sender.call{value: s_rewardPerPeriod}("");
         if (!success) revert StakingApp__TransferFailed();
     }
+```
 
 🚀 Execution Example
 Here is a step-by-step example of how a user interacts with the StakingApp to earn ETH.
 
-Step 1: Setup & Funding
+- Step 1: Setup & Funding
 The contract is deployed by the Owner. During deployment, the Staking Token address, staking period (e.g., 7 days), fixed staking amount (e.g., 100 STK), and reward per period (e.g., 0.1 ETH) are configured. The Owner sends ETH directly to the contract to fund the reward pool.
 
-Step 2: User Approval
+- Step 2: User Approval
 The User wants to stake. Because the staking token is an ERC20 standard token, the user must first call approve() on the token contract directly, granting the StakingApp contract permission to move their 100 STK.
 
-Step 3: Execute Deposit
+- Step 3: Execute Deposit
 The user calls depositTokens(100) on the StakingApp. The contract pulls the 100 STK into its vault and records the current block.timestamp.
 
-Step 4: Claiming Rewards
+- Step 4: Claiming Rewards
 After 7 days pass, the user calls claimRewards(). The contract checks that the user still has 100 STK deposited and that 7 days have elapsed. It then sends 0.1 ETH to the user and resets their timestamp so they can earn another 0.1 ETH in exactly 7 more days.
 
-Step 5: Withdrawal
+- Step 5: Withdrawal
 The user decides to exit the pool. They call withdrawTokens(). The contract zeroes out their balance and returns their 100 STK. Because their balance is now 0, they can no longer claim ETH rewards.
 
 ⬆️ Installation
-Terminal - Bash
-- forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std
+```Bash
+forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std
+```
 
 🧪 Testing
-Terminal - Bash
+```Bash
 - forge test -vvvv
+```
 
 📊 Coverage
-Terminal - Bash
+```Bash
 - forge coverage
+```
 
 📜 Contract Address
 (Provide deployed contract addresses here upon mainnet/testnet launch)

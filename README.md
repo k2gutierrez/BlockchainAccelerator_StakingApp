@@ -35,37 +35,39 @@ The primary interaction points of the application handle deposits, withdrawals, 
 depositTokens
 Users deposit the required fixed amount of tokens. Reverts if the user has already deposited or if the amount is incorrect.
 
-Solidity
-function depositTokens(uint256 _tokenAmountToDeposit) external {
-    if (_tokenAmountToDeposit != s_fixedStakingAmount) revert StakingApp__IncorrectAmountToDeposit();
-    if (s_userBalance[msg.sender] != 0) revert StakingApp__UserAlreadyDepositedTokens();
-    
-    IERC20(s_stakingToken).transferFrom(msg.sender, address(this), _tokenAmountToDeposit);
-    
-    s_userBalance[msg.sender] += _tokenAmountToDeposit;
-    s_elapsedPeriod[msg.sender] = block.timestamp;
-    
-    emit DepositTokens(msg.sender, _tokenAmountToDeposit);
-}
+    Solidity
+    function depositTokens(uint256 _tokenAmountToDeposit) external {
+        if (_tokenAmountToDeposit != s_fixedStakingAmount) revert StakingApp__IncorrectAmountToDeposit();
+        if (s_userBalance[msg.sender] != 0) revert StakingApp__UserAlreadyDepositedTokens();
+        
+        IERC20(s_stakingToken).transferFrom(msg.sender, address(this), _tokenAmountToDeposit);
+        
+        s_userBalance[msg.sender] += _tokenAmountToDeposit;
+        s_elapsedPeriod[msg.sender] = block.timestamp;
+        
+        emit DepositTokens(msg.sender, _tokenAmountToDeposit);
+    }
+
 claimRewards
 Calculates if the user has waited the required staking period. If successful, resets the timer and transfers the ETH reward.
 
-Solidity
-function claimRewards() external {
-    // 1. Check Balance
-    if (s_userBalance[msg.sender] != s_fixedStakingAmount) revert StakingApp__NotStaking();
+    Solidity
+    function claimRewards() external {
+        // 1. Check Balance
+        if (s_userBalance[msg.sender] != s_fixedStakingAmount) revert StakingApp__NotStaking();
 
-    // 2. Calculate reward amount
-    uint256 elapsePeriod = block.timestamp - s_elapsedPeriod[msg.sender];
-    require(elapsePeriod >= s_stakingPeriod, "Need to wait!");
+        // 2. Calculate reward amount
+        uint256 elapsePeriod = block.timestamp - s_elapsedPeriod[msg.sender];
+        require(elapsePeriod >= s_stakingPeriod, "Need to wait!");
 
-    // 3. Update state
-    s_elapsedPeriod[msg.sender] = block.timestamp;
+        // 3. Update state
+        s_elapsedPeriod[msg.sender] = block.timestamp;
 
-    // 4. Transfer rewards
-    (bool success,) = msg.sender.call{value: s_rewardPerPeriod}("");
-    if (!success) revert StakingApp__TransferFailed();
-}
+        // 4. Transfer rewards
+        (bool success,) = msg.sender.call{value: s_rewardPerPeriod}("");
+        if (!success) revert StakingApp__TransferFailed();
+    }
+
 🚀 Execution Example
 Here is a step-by-step example of how a user interacts with the StakingApp to earn ETH.
 

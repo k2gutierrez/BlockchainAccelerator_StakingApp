@@ -34,6 +34,10 @@ contract StakingApp is Ownable {
         s_rewardPerPeriod = _rewardPerPeriod;
     }
 
+    /**
+     * @dev Deposit tokens
+     * @param _tokenAmountToDeposit token amount to deposit 
+     */
     function depositTokens(uint256 _tokenAmountToDeposit) external {
         if (_tokenAmountToDeposit != s_fixedStakingAmount) revert StakingApp__IncorrectAmountToDeposit();
         if (s_userBalance[msg.sender] != 0) revert StakingApp__UserAlreadyDepositedTokens();
@@ -43,6 +47,9 @@ contract StakingApp is Ownable {
         emit DepositTokens(msg.sender, _tokenAmountToDeposit);
     }
 
+    /**
+     * @dev Msg.sender withdraw tokens
+     */
     function withdrawTokens() external {
         uint256 userBalance = s_userBalance[msg.sender];
         s_userBalance[msg.sender] = 0;
@@ -50,6 +57,9 @@ contract StakingApp is Ownable {
         emit WithdrawTokens(msg.sender, userBalance);
     }
 
+    /**
+     * @dev Claim rewards
+     */
     function claimRewards() external {
         // 1. Check Balance
         if (s_userBalance[msg.sender] != s_fixedStakingAmount) revert StakingApp__NotStaking();
@@ -65,12 +75,18 @@ contract StakingApp is Ownable {
         if (!success) revert StakingApp__TransferFailed();
     }
 
+    /**
+     * @dev Change the staking perior. Only Onwer
+     * @param _newStakingPeriod new staking period
+     */
     function changeStakingPeriod(uint256 _newStakingPeriod) external onlyOwner {
         s_stakingPeriod = _newStakingPeriod;
         emit ChangeStakingPeriod(_newStakingPeriod);
     }
 
-    // function feedContract() external payable onlyOwner {}
+    /**
+     * @dev Receive function to send eth, only owner
+     */
     receive() external payable onlyOwner {
         emit EtherSent(msg.value);
     }

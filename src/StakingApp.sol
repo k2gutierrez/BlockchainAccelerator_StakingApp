@@ -4,6 +4,11 @@ pragma solidity 0.8.30;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
+/**
+ * @title Staking App
+ * @author Carlos Gutiérrez
+ * @notice Staking app with a Staking token
+ */
 contract StakingApp is Ownable {
 
     error StakingApp__IncorrectAmountToDeposit();
